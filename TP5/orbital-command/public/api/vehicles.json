@@ -1,0 +1,7 @@
+[
+  { "kind": "reusable-launcher", "id": "aquila-1", "name": "Aquila-1", "model": "Aquila", "flightsCompleted": 12, "status": "ready" },
+  { "kind": "reusable-launcher", "id": "aquila-2", "name": "Aquila-2", "model": "Aquila", "flightsCompleted": 7, "status": "maintenance" },
+  { "kind": "heavy-launcher", "id": "titan-heavy", "name": "Titan Heavy", "model": "Titan", "maxPayloadKg": 28000, "status": "assigned" },
+  { "kind": "cargo-vehicle", "id": "hermes-a", "name": "Hermes A", "model": "Hermes", "dockingPort": "A", "status": "ready" },
+  { "kind": "cargo-vehicle", "id": "hermes-b", "name": "Hermes B", "model": "Hermes", "dockingPort": "B", "status": "grounded" }
+]

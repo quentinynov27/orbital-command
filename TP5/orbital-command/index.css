@@ -1,0 +1,679 @@
+/* =====================================================
+   ORBITAL COMMAND — thème cyberpunk
+   À placer dans src/index.css (ou importer dans main.tsx)
+   ===================================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap");
+
+:root {
+  /* Couleurs */
+  --bg-void: #05070c;
+  --bg-panel: #0d1420;
+  --bg-panel-alt: #101a2c;
+  --cyan: #29f1ff;
+  --cyan-dim: rgba(41, 241, 255, 0.35);
+  --magenta: #ff3b8d;
+  --amber: #ffb020;
+  --red-alert: #ff4d4d;
+  --text: #dff7ff;
+  --text-muted: #6f8296;
+  --grid-line: rgba(41, 241, 255, 0.08);
+
+  /* Typo */
+  --font-display: "Orbitron", "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "Consolas", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-void);
+  color: var(--text);
+  font-family: var(--font-mono);
+  min-height: 100vh;
+  /* Grille de fond façon HUD, discrète */
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 40px 40px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Un seul moment animé : un balayage scanline discret sur tout l'écran */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(41, 241, 255, 0.05) 50%,
+    transparent 100%
+  );
+  background-size: 100% 6px;
+  animation: scan 9s linear infinite;
+  mix-blend-mode: screen;
+}
+
+@keyframes scan {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 240px; }
+}
+
+/* ----------------- Structure globale (AppLayout.tsx) ----------------- */
+
+.shell {
+  min-height: 100vh;
+}
+
+.topnav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  gap: 4px;
+  padding: 16px 24px;
+  background: rgba(5, 7, 12, 0.85);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--cyan-dim);
+}
+
+.topnav a {
+  position: relative;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--text-muted);
+  padding: 8px 14px;
+  transition: color 0.15s ease;
+}
+
+.topnav a:hover {
+  color: var(--text);
+}
+
+/* Lien actif : couleur ET soulignement lumineux — l'indice n'est
+   pas QUE la couleur (repose aussi sur aria-current="page", ajouté
+   automatiquement par NavLink, pour les lecteurs d'écran). */
+.topnav a.active {
+  color: var(--cyan);
+  font-weight: 700;
+}
+
+.topnav a.active::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 0;
+  height: 2px;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+}
+
+.topnav a:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+.page h1 {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text);
+  text-shadow: 0 0 12px var(--cyan-dim);
+}
+
+/* ----------------- ControlPage.tsx : grille des 2 panneaux ----------------- */
+
+.control-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+/* ----------------- MissionsPage.tsx / AlertsPage.tsx ----------------- */
+
+.record-list {
+  list-style: none;
+  margin: 24px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.record-list li {
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--grid-line);
+  border-left: 3px solid var(--cyan-dim);
+  padding: 16px 20px;
+}
+
+.record-list strong {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+
+.record-list span {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.record-list p {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Alertes : la sévérité est signalée par la couleur DE LA BORDURE
+   ET par le libellé texte ("Critique"/"Avertissement"), jamais la
+   couleur seule. */
+.record-list li.alert-critical {
+  border-left-color: var(--red-alert);
+}
+
+.record-list li.alert-critical strong {
+  color: var(--red-alert);
+  text-shadow: 0 0 8px rgba(255, 77, 77, 0.35);
+}
+
+.record-list li.alert-warning {
+  border-left-color: var(--amber);
+}
+
+.record-list li.alert-warning strong {
+  color: var(--amber);
+  text-shadow: 0 0 8px rgba(255, 176, 32, 0.35);
+}
+
+/* ----------------- Panel.tsx ----------------- */
+
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--cyan-dim);
+  clip-path: polygon(
+    0 12px, 12px 0,
+    100% 0, 100% calc(100% - 12px),
+    calc(100% - 12px) 100%, 0 100%
+  );
+  padding: 24px;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4), 0 20px 40px -20px rgba(41, 241, 255, 0.15);
+}
+
+.panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 46px;
+  height: 2px;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+}
+
+/* ----------------- PanelHeader.tsx ----------------- */
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-bottom: 1px solid var(--grid-line);
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+}
+
+.panel-header h2 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0;
+  color: var(--text);
+  text-shadow: 0 0 12px var(--cyan-dim);
+}
+
+/* ----------------- Filtres (dans App.tsx) ----------------- */
+
+.filters {
+  display: flex;
+  gap: 8px;
+}
+
+.filters button {
+  background: transparent;
+  border: 1px solid var(--cyan-dim);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  padding: 6px 14px;
+  cursor: pointer;
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.filters button:hover {
+  color: var(--cyan);
+  border-color: var(--cyan);
+}
+
+.filters button:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+/* ----------------- Compteur / état vide ----------------- */
+
+.page p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* ----------------- MetricGrid.tsx / Metric.tsx ----------------- */
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.metric {
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--grid-line);
+  padding: 16px;
+}
+
+.metric-label {
+  margin: 0 0 8px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.metric-value {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--cyan);
+  text-shadow: 0 0 10px var(--cyan-dim);
+}
+
+/* ----------------- FleetGrid.tsx / VehicleCard.tsx -----------------
+   VehicleCard rend des <tr>. On les affiche en flex pour un rendu
+   "console" cohérent, sans réécrire le composant. */
+
+.fleet-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vehicle-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--grid-line);
+  border-left: 3px solid var(--cyan-dim);
+  padding: 12px 16px;
+  transition: border-left-color 0.15s ease, background 0.15s ease;
+}
+
+.vehicle-row:hover {
+  border-left-color: var(--cyan);
+  background: #131f34;
+}
+
+.vehicle-name {
+  display: block;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.vehicle-id {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.vehicle-model {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-width: 70px;
+}
+
+.vehicle-metrics {
+  display: flex;
+  gap: 16px;
+  flex: 1;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.card-link {
+  background: transparent;
+  border: none;
+  color: var(--magenta);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.card-link:hover {
+  text-shadow: 0 0 8px var(--magenta);
+}
+
+/* ----------------- StatusBadge.tsx -----------------
+   Nécessite une petite classe sur le <span> pour coder la couleur
+   par statut (voir la modif d'une ligne indiquée dans la réponse). */
+
+.status-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 10px;
+  border: 1px solid currentColor;
+}
+
+.status-ready       { color: var(--cyan);      text-shadow: 0 0 8px var(--cyan-dim); }
+.status-maintenance { color: var(--amber);     text-shadow: 0 0 8px rgba(255, 176, 32, 0.35); }
+.status-assigned    { color: var(--magenta);   text-shadow: 0 0 8px rgba(255, 59, 141, 0.35); }
+.status-grounded    { color: var(--red-alert); text-shadow: 0 0 8px rgba(255, 77, 77, 0.35); }
+
+/* ----------------- Actions de bascule (App.tsx) ----------------- */
+
+.fleet-actions {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fleet-actions li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  padding: 8px 12px;
+  border: 1px solid var(--grid-line);
+}
+
+.fleet-actions button {
+  background: var(--bg-void);
+  border: 1px solid var(--magenta);
+  color: var(--magenta);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease;
+}
+
+.fleet-actions button:hover {
+  box-shadow: 0 0 12px rgba(255, 59, 141, 0.4);
+}
+
+.fleet-actions button:focus-visible {
+  outline: 2px solid var(--magenta);
+  outline-offset: 2px;
+}
+
+/* ----------------- NewMissionPage.tsx ----------------- */
+
+.new-mission-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.mission-form-layout {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 760px) {
+  .mission-form-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ----------------- MissionForm.tsx ----------------- */
+
+.mission-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  background: var(--bg-panel);
+  border: 1px solid var(--cyan-dim);
+  clip-path: polygon(
+    0 10px, 10px 0,
+    100% 0, 100% calc(100% - 10px),
+    calc(100% - 10px) 100%, 0 100%
+  );
+  padding: 24px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.field input,
+.field textarea,
+.field select {
+  background: var(--bg-void);
+  border: 1px solid var(--grid-line);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  padding: 10px 12px;
+}
+
+.field input::placeholder,
+.field textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 1px var(--cyan-dim);
+}
+
+.field select:disabled {
+  color: var(--text-muted);
+  border-style: dashed;
+}
+
+.field-error {
+  border: 1px solid var(--red-alert);
+  background: rgba(255, 77, 77, 0.08);
+  padding: 12px 14px;
+  font-size: 0.8rem;
+  color: var(--red-alert);
+}
+
+.field-error button {
+  margin-top: 8px;
+  background: transparent;
+  border: 1px solid var(--red-alert);
+  color: var(--red-alert);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  padding: 5px 12px;
+  cursor: pointer;
+}
+
+.mission-form > button[type="submit"] {
+  align-self: flex-start;
+  background: var(--cyan);
+  border: none;
+  color: var(--bg-void);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease;
+}
+
+.mission-form > button[type="submit"]:hover {
+  box-shadow: 0 0 16px var(--cyan-dim);
+}
+
+/* ----------------- MissionPreview.tsx ----------------- */
+
+.mission-preview {
+  background: var(--bg-panel-alt);
+  border: 1px dashed var(--cyan-dim);
+  padding: 24px;
+}
+
+.mission-preview h2,
+.mission-preview h3 {
+  margin: 0 0 4px;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.mission-preview dl {
+  margin: 12px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mission-preview dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.8rem;
+}
+
+.mission-preview dt {
+  color: var(--text-muted);
+}
+
+.mission-preview dd {
+  margin: 0;
+  text-align: right;
+  color: var(--text);
+}
+
+.mission-preview ul {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* ----------------- Confirmation + lien "Planifier une mission" ----------------- */
+
+.submit-confirmation {
+  border-left: 3px solid var(--cyan);
+  background: var(--bg-panel-alt);
+  padding: 12px 16px;
+  font-size: 0.8rem;
+  color: var(--text);
+}
+
+.new-mission-link {
+  display: inline-block;
+  margin: 16px 0;
+  border: 1px solid var(--cyan-dim);
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-decoration: none;
+  padding: 8px 16px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.new-mission-link:hover {
+  border-color: var(--cyan);
+  box-shadow: 0 0 12px var(--cyan-dim);
+}
+
+.new-mission-link:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+/* ----------------- VehicleCard.tsx : lien sur le nom + cellule action ----------------- */
+
+.vehicle-name-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.vehicle-name-link:hover .vehicle-name {
+  color: var(--cyan);
+  text-shadow: 0 0 8px var(--cyan-dim);
+}
+
+.vehicle-name-link:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.row-action {
+  text-align: right;
+}
+
+/* ----------------- Accessibilité ----------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  body::after {
+    animation: none;
+  }
+}
